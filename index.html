@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ZCC — Expense Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:#0a0a08;color:#f4f4ee;font-family:'DM Sans',sans-serif;min-height:100vh;}
+
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;}
+.login-box{border:1px solid #2a2a27;padding:48px 40px;width:340px;}
+.login-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.1em;color:#f4f4ee;margin-bottom:4px;}
+.login-sub{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:#6b6b65;margin-bottom:32px;}
+.login-box input{width:100%;background:#1c1c1a;border:1px solid #2a2a27;color:#f4f4ee;padding:14px 16px;font-family:'DM Mono',monospace;font-size:13px;letter-spacing:0.06em;outline:none;margin-bottom:12px;}
+.login-box input:focus{border-color:#c8832a;}
+.login-btn{width:100%;background:#c8832a;border:none;color:#0a0a08;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:0.16em;padding:14px;cursor:pointer;}
+.login-btn:hover{background:#d99040;}
+
+/* TOPBAR */
+.topbar{background:#0a0a08;border-bottom:1px solid #2a2a27;padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:10;}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:0.12em;color:#c8832a;}
+.topbar-stats{display:flex;gap:32px;}
+.stat{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6b65;}
+.stat span{color:#f4f4ee;margin-left:6px;}
+
+/* FILTERS */
+.filters{padding:16px 32px;border-bottom:1px solid #1c1c1a;display:flex;gap:8px;flex-wrap:wrap;}
+.fbtn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;padding:7px 16px;border:1px solid #2a2a27;background:transparent;color:#6b6b65;cursor:pointer;}
+.fbtn.active{border-color:#f4f4ee;color:#f4f4ee;}
+.fbtn:hover{border-color:#6b6b65;color:#9a9a92;}
+
+/* BODY */
+.body{padding:24px 32px;}
+.add-btn{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;padding:8px 20px;border:1px solid #c8832a;background:transparent;color:#c8832a;cursor:pointer;margin-bottom:24px;}
+.add-btn:hover{background:rgba(200,131,42,0.08);}
+
+/* FORM */
+.form{border:1px solid #2a2a27;padding:32px;margin-bottom:24px;background:#111110;display:none;}
+.form.open{display:block;}
+.form-label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#c8832a;margin-bottom:20px;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.field{display:flex;flex-direction:column;gap:6px;}
+.field label{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:#6b6b65;}
+.field input,.field select,.field textarea{background:#1c1c1a;border:1px solid #2a2a27;color:#f4f4ee;padding:10px 12px;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.04em;outline:none;width:100%;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#c8832a;}
+.field textarea{height:70px;resize:vertical;}
+.field select option{background:#1c1c1a;}
+.form-full{margin-bottom:16px;}
+.form-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:4px;}
+.save-btn{background:#c8832a;border:none;color:#0a0a08;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:0.12em;padding:10px 28px;cursor:pointer;}
+.save-btn:hover{background:#d99040;}
+.cancel-btn{background:transparent;border:1px solid #2a2a27;color:#6b6b65;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;padding:10px 20px;cursor:pointer;}
+.cancel-btn:hover{border-color:#6b6b65;color:#9a9a92;}
+
+/* ENTRIES */
+.entry{border:1px solid #2a2a27;padding:28px 32px;margin-bottom:2px;background:#0a0a08;}
+.entry:hover{background:#111110;}
+.entry-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.entry-vendor{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:0.06em;color:#f4f4ee;}
+.entry-date{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:#6b6b65;margin-top:2px;}
+.entry-amount{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:0.04em;color:#f4f4ee;text-align:right;}
+.entry-deduct{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.1em;color:#c8832a;text-align:right;margin-top:2px;}
+.entry-purpose{font-family:'DM Sans',sans-serif;font-size:13px;color:#9a9a92;font-style:italic;margin-bottom:16px;line-height:1.6;}
+.entry-notes{font-style:normal;color:#6b6b65;}
+.entry-footer{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid #1c1c1a;}
+.badge{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;padding:4px 12px;border:1px solid;}
+.badge-product{border-color:#c8832a;color:#c8832a;}
+.badge-marketing{border-color:#7ab8d4;color:#7ab8d4;}
+.badge-meals{border-color:#a88fd4;color:#a88fd4;}
+.badge-travel{border-color:#6b9e6b;color:#6b9e6b;}
+.badge-supplies{border-color:#9a9a92;color:#9a9a92;}
+.badge-other{border-color:#3d3d39;color:#6b6b65;}
+.del-btn{background:transparent;border:1px solid #2a2a27;color:#6b6b65;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;padding:6px 14px;cursor:pointer;}
+.del-btn:hover{border-color:#e24b4a;color:#e24b4a;}
+.empty{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.16em;text-transform:uppercase;color:#3d3d39;text-align:center;padding:48px 0;}
+
+/* EXPORT */
+.export-row{display:flex;gap:8px;padding:24px 32px;border-top:1px solid #1c1c1a;}
+.exp-btn{background:transparent;border:1px solid #2a2a27;color:#6b6b65;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.14em;text-transform:uppercase;padding:8px 18px;cursor:pointer;}
+.exp-btn:hover{border-color:#c8832a;color:#c8832a;}
+
+.hidden{display:none!important;}
+@media(max-width:600px){
+  .form-grid,.form-row3{grid-template-columns:1fr;}
+  .topbar-stats{gap:12px;}
+  .topbar{flex-direction:column;height:auto;padding:12px 20px;gap:8px;}
+  .body,.filters,.export-row{padding-left:20px;padding-right:20px;}
+}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-wrap">
+    <div class="login-box">
+      <div class="login-title">Zero Chaos Coffee</div>
+      <div class="login-sub">Expense Admin</div>
+      <input type="password" id="pw" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="login-btn" onclick="doLogin()">ENTER</button>
+    </div>
+  </div>
+</div>
+
+<div id="main-screen" class="hidden">
+  <div class="topbar">
+    <div class="topbar-title">ZCC — EXPENSES</div>
+    <div class="topbar-stats">
+      <div class="stat">TOTAL <span id="s-total">$0.00</span></div>
+      <div class="stat">DEDUCTIBLE <span id="s-deduct">$0.00</span></div>
+      <div class="stat">ENTRIES <span id="s-count">0</span></div>
+      <div class="stat">THIS MONTH <span id="s-month">$0.00</span></div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <button class="fbtn active" onclick="setFilter('all',this)">ALL</button>
+    <button class="fbtn" onclick="setFilter('product',this)">PRODUCT RESEARCH</button>
+    <button class="fbtn" onclick="setFilter('marketing',this)">MARKETING</button>
+    <button class="fbtn" onclick="setFilter('meals',this)">MEALS</button>
+    <button class="fbtn" onclick="setFilter('travel',this)">TRAVEL</button>
+    <button class="fbtn" onclick="setFilter('supplies',this)">SUPPLIES</button>
+    <button class="fbtn" onclick="setFilter('other',this)">OTHER</button>
+  </div>
+
+  <div class="body">
+    <button class="add-btn" onclick="toggleForm()">+ ADD EXPENSE</button>
+
+    <div class="form" id="add-form">
+      <div class="form-label">New Expense</div>
+      <div class="form-grid">
+        <div class="field"><label>Date</label><input type="date" id="f-date"></div>
+        <div class="field"><label>Vendor / Description</label><input type="text" id="f-vendor" placeholder="e.g. Zero Chaos Coffee"></div>
+      </div>
+      <div class="form-row3">
+        <div class="field"><label>Amount ($)</label><input type="number" id="f-amount" placeholder="0.00" step="0.01" min="0"></div>
+        <div class="field"><label>Category</label>
+          <select id="f-cat">
+            <option value="product">Product Research</option>
+            <option value="marketing">Marketing</option>
+            <option value="meals">Meals & Entertainment</option>
+            <option value="travel">Travel</option>
+            <option value="supplies">Supplies & Equipment</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Deductibility</label>
+          <select id="f-ded">
+            <option value="100">100% deductible</option>
+            <option value="50">50% deductible</option>
+            <option value="0">Non-deductible</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-full field"><label>Business Purpose (required for tax documentation)</label><textarea id="f-purpose" placeholder="e.g. Product tasting event — 12 attendees, consumer feedback on Zero Series lineup for Q3 product development"></textarea></div>
+      <div class="form-full field"><label>Attendees / Notes</label><input type="text" id="f-notes" placeholder="e.g. 12 potential customers, home tasting event"></div>
+      <div class="form-btns">
+        <button class="cancel-btn" onclick="toggleForm()">CANCEL</button>
+        <button class="save-btn" onclick="addEntry()">SAVE</button>
+      </div>
+    </div>
+
+    <div id="entry-list"></div>
+  </div>
+
+  <div class="export-row">
+    <button class="exp-btn" onclick="exportCSV()">EXPORT CSV</button>
+    <button class="exp-btn" onclick="exportSummary()">TAX SUMMARY</button>
+  </div>
+</div>
+
+<script>
+const PASS='ZC2001';
+const CATS={
+  product:{label:'Product Research',cls:'badge-product'},
+  marketing:{label:'Marketing',cls:'badge-marketing'},
+  meals:{label:'Meals & Entertainment',cls:'badge-meals'},
+  travel:{label:'Travel',cls:'badge-travel'},
+  supplies:{label:'Supplies & Equipment',cls:'badge-supplies'},
+  other:{label:'Other',cls:'badge-other'}
+};
+let entries=[], filter='all';
+try{const s=localStorage.getItem('zcc_exp_v2');if(s)entries=JSON.parse(s);}catch(e){}
+function save(){try{localStorage.setItem('zcc_exp_v2',JSON.stringify(entries));}catch(e){}}
+function fmt(n){return'$'+Number(n).toFixed(2);}
+
+function doLogin(){
+  const pw=document.getElementById('pw').value;
+  if(pw===PASS){
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('main-screen').classList.remove('hidden');
+    document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+    render();
+  } else {
+    const i=document.getElementById('pw');
+    i.style.borderColor='#e24b4a';i.value='';i.placeholder='Incorrect password';
+  }
+}
+
+function toggleForm(){
+  document.getElementById('add-form').classList.toggle('open');
+}
+
+function setFilter(f,btn){
+  filter=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  render();
+}
+
+function addEntry(){
+  const date=document.getElementById('f-date').value;
+  const vendor=document.getElementById('f-vendor').value.trim();
+  const amount=parseFloat(document.getElementById('f-amount').value);
+  const cat=document.getElementById('f-cat').value;
+  const ded=parseInt(document.getElementById('f-ded').value);
+  const purpose=document.getElementById('f-purpose').value.trim();
+  const notes=document.getElementById('f-notes').value.trim();
+  if(!date||!vendor||isNaN(amount)||amount<=0){alert('Date, vendor, and amount are required.');return;}
+  if(!purpose){alert('Business purpose is required for tax documentation.');return;}
+  entries.unshift({id:Date.now(),date,vendor,amount,cat,ded,purpose,notes});
+  save();
+  document.getElementById('add-form').classList.remove('open');
+  document.getElementById('f-vendor').value='';
+  document.getElementById('f-amount').value='';
+  document.getElementById('f-purpose').value='';
+  document.getElementById('f-notes').value='';
+  render();
+}
+
+function deleteEntry(id){
+  if(!confirm('Remove this entry?'))return;
+  entries=entries.filter(e=>e.id!==id);save();render();
+}
+
+function render(){
+  const filtered=filter==='all'?entries:entries.filter(e=>e.cat===filter);
+  const now=new Date();
+  const thisMonth=entries.filter(e=>{const d=new Date(e.date+'T12:00:00');return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  document.getElementById('s-total').textContent=fmt(entries.reduce((s,e)=>s+e.amount,0));
+  document.getElementById('s-deduct').textContent=fmt(entries.reduce((s,e)=>s+(e.amount*e.ded/100),0));
+  document.getElementById('s-count').textContent=entries.length;
+  document.getElementById('s-month').textContent=fmt(thisMonth.reduce((s,e)=>s+e.amount,0));
+  const list=document.getElementById('entry-list');
+  if(!filtered.length){list.innerHTML='<div class="empty">No entries. Add your first expense above.</div>';return;}
+  list.innerHTML=filtered.map(e=>{
+    const c=CATS[e.cat]||CATS.other;
+    const da=(e.amount*e.ded/100);
+    const d=new Date(e.date+'T12:00:00');
+    const ds=d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    return`<div class="entry">
+      <div class="entry-top">
+        <div><div class="entry-vendor">${e.vendor}</div><div class="entry-date">${ds}</div></div>
+        <div><div class="entry-amount">${fmt(e.amount)}</div><div class="entry-deduct">${e.ded}% DEDUCTIBLE — ${fmt(da)}</div></div>
+      </div>
+      <div class="entry-purpose">"${e.purpose}"${e.notes?'<br><span class="entry-notes">'+e.notes+'</span>':''}</div>
+      <div class="entry-footer">
+        <span class="badge ${c.cls}">${c.label}</span>
+        <button class="del-btn" onclick="deleteEntry(${e.id})">REMOVE</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function exportCSV(){
+  if(!entries.length){alert('No entries to export.');return;}
+  const h='Date,Vendor,Amount,Category,Deductibility %,Deductible Amount,Business Purpose,Notes';
+  const rows=entries.map(e=>[e.date,`"${e.vendor}"`,e.amount.toFixed(2),CATS[e.cat].label,e.ded,(e.amount*e.ded/100).toFixed(2),`"${e.purpose}"`,`"${e.notes}"`].join(','));
+  const blob=new Blob([[h,...rows].join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='zcc_expenses.csv';a.click();
+}
+
+function exportSummary(){
+  if(!entries.length){alert('No entries to export.');return;}
+  const total=entries.reduce((s,e)=>s+e.amount,0);
+  const deduct=entries.reduce((s,e)=>s+(e.amount*e.ded/100),0);
+  const byCat={};
+  entries.forEach(e=>{if(!byCat[e.cat])byCat[e.cat]={t:0,d:0};byCat[e.cat].t+=e.amount;byCat[e.cat].d+=e.amount*e.ded/100;});
+  let txt=`ZERO CHAOS COFFEE — BUSINESS EXPENSE SUMMARY\nGenerated: ${new Date().toLocaleDateString()}\n\nTOTALS\nTotal Expenses: ${fmt(total)}\nEstimated Deductible: ${fmt(deduct)}\nEntries: ${entries.length}\n\nBY CATEGORY\n`;
+  Object.entries(byCat).forEach(([k,v])=>{txt+=`${CATS[k].label}: ${fmt(v.t)} (${fmt(v.d)} deductible)\n`;});
+  txt+=`\nALL ENTRIES\n`;
+  entries.forEach(e=>{txt+=`\n${e.date} | ${e.vendor} | ${fmt(e.amount)} | ${e.ded}% deductible\nPurpose: ${e.purpose}\n${e.notes?'Notes: '+e.notes+'\n':''}`;});
+  const blob=new Blob([txt],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='zcc_expense_summary.txt';a.click();
+}
+</script>
+</body>
+</html>
