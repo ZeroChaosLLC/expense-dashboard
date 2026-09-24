@@ -90,6 +90,7 @@
     <h1>Expenses</h1>
     <div class="header-right">
       <span id="whoami"></span>
+      <button class="button ghost" id="sheetsBtn">Export to Sheets</button>
       <button class="button ghost" id="exportBtn">Export CSV</button>
       <button class="button ghost" id="addPasskeyBtn">Add Face ID</button>
       <button class="button ghost" id="signOutBtn">Sign out</button>
@@ -213,6 +214,15 @@
     if (data.session) showApp(data.session.user); else showLogin();
   })();
   const BUCKET = 'expense-receipts';   // private bucket; files are only viewable while signed in
+  // Google Sheets backup (same Apps Script URL as your previous page)
+  const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbz_Sz98x3sRMCWurc1s8Bf4I7ab8EIhKtj5Wq-aOC2e8QM4pVXZbE0ShODzmqEaimKy/exec';
+  async function syncToSheets(e) {
+    if (!SHEETS_URL || !e) return;
+    const payload = { ...e, timestamp: e.date || new Date().toISOString(),
+      deductible_amount: e.deductibility === '100%' ? e.amount : e.deductibility === '50%' ? e.amount * 0.5 : 0,
+      receipt_url: e.receipt_url ? 'on file' : '' };
+    try { await fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch (err) { console.warn('Sheets sync failed', err); }
+  }
   let expenses = [], cat = 'ALL', editId = null, deleteId = null;
   const money = n => '$' + (Number(n) || 0).toFixed(2);
   function onSignedIn() { loadExpenses(); }
@@ -291,7 +301,7 @@
     const { data, error } = await q;
     btn.disabled = false; btn.textContent = editId ? 'Save changes' : 'Save expense';
     if (error || !data || !data.length) { $('formError').textContent = 'Save failed: ' + (error ? error.message : 'no row saved'); return; }
-    closeModals(); toast(editId ? 'Expense updated' : 'Expense saved'); loadExpenses();
+    syncToSheets(data[0]); closeModals(); toast(editId ? 'Expense updated' : 'Expense saved'); loadExpenses();
   });
 
   $('delConfirm').addEventListener('click', async () => {
@@ -308,5 +318,12 @@
     const rows = expenses.map(r => [r.date, r.vendor, r.amount, r.category, r.deductibility, r.business_purpose, r.notes, r.receipt_url ? 'Yes' : 'No'].map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','));
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([[head.join(','), ...rows].join('\n')], { type: 'text/csv' }));
     a.download = 'zcc-expenses-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); toast('CSV exported');
+  });
+
+  $('sheetsBtn').addEventListener('click', async () => {
+    if (!expenses.length) { toast('No expenses to export', true); return; }
+    const btn = $('sheetsBtn'); btn.disabled = true;
+    for (let i = 0; i < expenses.length; i++) { btn.textContent = `Exporting ${i + 1}/${expenses.length}`; await syncToSheets(expenses[i]); await new Promise(r => setTimeout(r, 400)); }
+    btn.disabled = false; btn.textContent = 'Export to Sheets'; toast('Sent ' + expenses.length + ' expenses to Sheets');
   });
 </script></body></html>
