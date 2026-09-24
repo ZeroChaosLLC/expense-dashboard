@@ -252,7 +252,7 @@ async function syncToSheets(expense){
     // no-cors to avoid preflight, Apps Script handles it
     const payload = {
       ...expense,
-      timestamp: new Date().toISOString(),
+      timestamp: expense.date || new Date().toISOString(),
       deductible_amount: expense.deductibility === '100%' ? expense.amount : expense.deductibility === '50%' ? expense.amount*0.5 : 0
     };
     await fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
