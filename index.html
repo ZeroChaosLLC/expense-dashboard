@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en"><head>
-<title>Expenses | ZCC</title>
+<title>Expenses | Zero Chaos</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
@@ -55,7 +55,7 @@
   .toast.bad{border-color:var(--red);}
   @media (prefers-reduced-motion:reduce){.toast{transition:none;}}
   .table-container{background:var(--dark-mid);overflow-x:auto;}
-  table{width:100%;border-collapse:collapse;min-width:820px;}
+  table{width:100%;border-collapse:collapse;min-width:900px;}
   th{background:var(--charcoal);padding:12px;text-align:left;font-family:'DM Mono',monospace;font-size:11px;color:var(--faint);border-bottom:1px solid var(--muted);font-weight:500;}
   td{padding:12px;border-bottom:1px solid var(--charcoal);font-size:14px;vertical-align:top;}
   td.amt{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--amber);}
@@ -68,11 +68,20 @@
   .tax h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:1px;margin-bottom:10px;}
   .cat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--charcoal);font-size:14px;}
   .cat-row:last-child{border-bottom:none;}
+  .biz-tabs{display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid var(--dark-mid);overflow-x:auto;}
+  .biz-tab{padding:10px 18px;background:none;border:none;border-bottom:2px solid transparent;color:var(--faint);cursor:pointer;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px;white-space:nowrap;}
+  .biz-tab.active{color:var(--white);border-bottom-color:var(--amber);}
+  .biz-tab small{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-left:6px;letter-spacing:0;}
+  .biz-pill{font-family:'DM Mono',monospace;font-size:11px;padding:2px 8px;border:1px solid var(--muted);white-space:nowrap;}
+  .breakdowns{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .breakdowns .tax{margin-top:28px;}
+  @media (max-width:800px){.breakdowns{grid-template-columns:1fr;}}
+  @media (max-width:600px){.biz-tab small{display:none;}.biz-tab{padding:10px 14px;}}
   @media (max-width:600px){.two{grid-template-columns:1fr;}}
 </style></head><body>
 <div id="login" class="hidden">
   <div class="login-box">
-    <h1>Zero Chaos Coffee</h1>
+    <h1>Zero Chaos</h1>
     <p>Sign in to continue.</p>
     <button type="button" class="button wide" id="passkeyLoginBtn">Sign in with Face ID</button>
     <div class="or">or use your password</div>
@@ -87,7 +96,7 @@
 <div class="toast" id="toast"></div>
 <div id="app" class="page hidden">
   <div class="header">
-    <h1>Expenses</h1>
+    <h1>Zero Chaos Expenses</h1>
     <div class="header-right">
       <span id="whoami"></span>
       <button class="button ghost" id="sheetsBtn">Export to Sheets</button>
@@ -97,29 +106,27 @@
       <button class="button" id="addBtn">Add expense</button>
     </div>
   </div>
+  <div class="biz-tabs" id="bizTabs" role="tablist">
+    <button class="biz-tab active" data-biz="ALL" role="tab">All<small>Zero Chaos LLC</small></button>
+    <button class="biz-tab" data-biz="ZC" role="tab">ZC<small>Shared</small></button>
+    <button class="biz-tab" data-biz="ZCC" role="tab">ZCC<small>Coffee</small></button>
+    <button class="biz-tab" data-biz="ZCL" role="tab">ZCL<small>Leadership</small></button>
+  </div>
   <div class="stats">
     <div class="stat-card"><div class="stat-label">Total spent</div><div class="stat-number" id="valTotal">$0.00</div></div>
     <div class="stat-card"><div class="stat-label">Deductible</div><div class="stat-number" id="valDeduct">$0.00</div></div>
     <div class="stat-card"><div class="stat-label" id="lblMonth">This month</div><div class="stat-number" id="valMonth">$0.00</div></div>
     <div class="stat-card"><div class="stat-label" id="lblYtd">Year to date</div><div class="stat-number" id="valYtd">$0.00</div></div>
   </div>
-  <div class="filters" id="filters">
-    <button class="filter-btn active" data-cat="ALL">All</button>
-    <button class="filter-btn" data-cat="Product Research">Product research</button>
-    <button class="filter-btn" data-cat="Marketing">Marketing</button>
-    <button class="filter-btn" data-cat="Meals & Entertainment">Meals</button>
-    <button class="filter-btn" data-cat="Travel">Travel</button>
-    <button class="filter-btn" data-cat="Supplies & Equipment">Supplies</button>
-    <button class="filter-btn" data-cat="Other">Other</button>
-  </div>
+  <div class="filters" id="filters"></div>
   <div id="loading" class="loading">Loading expenses...</div>
   <div class="table-container"><table>
-    <thead><tr><th>Date</th><th>Vendor</th><th>Amount</th><th>Category</th><th>Deductible</th><th>Receipt</th><th>Purpose</th><th></th></tr></thead>
+    <thead><tr><th>Date</th><th>Business</th><th>Vendor</th><th>Amount</th><th>Category</th><th>Deductible</th><th>Receipt</th><th>Purpose</th><th></th></tr></thead>
     <tbody id="tbody"></tbody>
   </table></div>
-  <div class="tax">
-    <h2>By category</h2>
-    <div id="catBreakdown"></div>
+  <div class="breakdowns">
+    <div class="tax"><h2>By category</h2><div id="catBreakdown"></div></div>
+    <div class="tax" id="bizBox"><h2>By business</h2><div id="bizBreakdown"></div></div>
   </div>
 </div>
 
@@ -130,10 +137,13 @@
       <div class="form-group"><label for="fDate">Date</label><input type="date" id="fDate"></div>
       <div class="form-group"><label for="fAmount">Amount ($)</label><input type="number" id="fAmount" step="0.01" min="0" inputmode="decimal"></div>
     </div>
+    <div class="form-group"><label for="fBusiness">Business</label>
+      <select id="fBusiness"><option value="">Select</option><option value="ZC">ZC — Shared / Zero Chaos LLC</option><option value="ZCC">ZCC — Zero Chaos Coffee</option><option value="ZCL">ZCL — Zero Chaos Leadership</option></select>
+      <div class="hint">Use ZC for costs both brands share: Workspace, domains, legal, LLC fees.</div></div>
     <div class="form-group"><label for="fVendor">Vendor / description</label><input type="text" id="fVendor"></div>
     <div class="two">
       <div class="form-group"><label for="fCategory">Category</label>
-        <select id="fCategory"><option value="">Select</option><option>Product Research</option><option>Marketing</option><option>Meals & Entertainment</option><option>Travel</option><option>Supplies & Equipment</option><option>Other</option></select></div>
+        <select id="fCategory"></select></div>
       <div class="form-group"><label for="fDeduct">Deductibility</label>
         <select id="fDeduct"><option value="">Select</option><option value="100%">100% deductible</option><option value="50%">50% deductible</option><option value="Non-deductible">Non-deductible</option></select></div>
     </div>
@@ -220,10 +230,15 @@
     if (!SHEETS_URL || !e) return;
     const payload = { ...e, timestamp: e.date || new Date().toISOString(),
       deductible_amount: e.deductibility === '100%' ? e.amount : e.deductibility === '50%' ? e.amount * 0.5 : 0,
-      receipt_url: e.receipt_url ? 'on file' : '' };
+      receipt_url: e.receipt_url ? 'on file' : '', business: e.business || 'ZCC', source: 'zc-expense-dashboard' };
     try { await fetch(SHEETS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) }); } catch (err) { console.warn('Sheets sync failed', err); }
   }
-  let expenses = [], cat = 'ALL', editId = null, deleteId = null;
+  const CATS = [['Product Research','Product research'],['Marketing','Marketing'],['Meals & Entertainment','Meals'],['Travel','Travel'],['Supplies & Equipment','Supplies'],['Software & Subscriptions','Software'],['Licenses & Fees','Licenses & fees'],['Inventory & Packaging','Inventory & packaging'],['Professional Services','Professional services'],['Other','Other']];
+  const BIZ = { ZC: 'ZC — Shared', ZCC: 'ZCC — Coffee', ZCL: 'ZCL — Leadership' };
+  $('fCategory').innerHTML = '<option value="">Select</option>' + CATS.map(([v]) => `<option>${esc(v)}</option>`).join('');
+  $('filters').innerHTML = '<button class="filter-btn active" data-cat="ALL">All categories</button>' + CATS.map(([v, l]) => `<button class="filter-btn" data-cat="${esc(v)}">${esc(l)}</button>`).join('');
+  let expenses = [], cat = 'ALL', biz = 'ALL', editId = null, deleteId = null;
+  const inBiz = () => biz === 'ALL' ? expenses : expenses.filter(r => r.business === biz);
   const money = n => '$' + (Number(n) || 0).toFixed(2);
   function onSignedIn() { loadExpenses(); }
   async function loadExpenses() {
@@ -233,8 +248,9 @@
   }
   function stats() {
     const now = new Date(), ym = now.toISOString().slice(0, 7), y = String(now.getFullYear());
-    let total = 0, ded = 0, month = 0, ytd = 0; const cats = {};
-    expenses.forEach(r => { const a = Number(r.amount) || 0; total += a;
+    let total = 0, ded = 0, month = 0, ytd = 0; const cats = {}, bizTot = { ZC: 0, ZCC: 0, ZCL: 0 };
+    expenses.forEach(r => { const a = Number(r.amount) || 0; if (bizTot[r.business] !== undefined) bizTot[r.business] += a; });
+    inBiz().forEach(r => { const a = Number(r.amount) || 0; total += a;
       if (r.deductibility === '100%') ded += a; if (r.deductibility === '50%') ded += a * 0.5;
       if ((r.date || '').startsWith(ym)) month += a; if ((r.date || '').startsWith(y)) ytd += a;
       cats[r.category || 'Other'] = (cats[r.category || 'Other'] || 0) + a; });
@@ -242,19 +258,25 @@
     $('valMonth').textContent = money(month); $('valYtd').textContent = money(ytd);
     $('lblMonth').textContent = now.toLocaleString('default', { month: 'long' }); $('lblYtd').textContent = y + ' to date';
     $('catBreakdown').innerHTML = Object.entries(cats).sort((a, b) => b[1] - a[1]).map(([k, v]) => `<div class="cat-row"><span>${esc(k)}</span><span>${money(v)}</span></div>`).join('') || '<div class="empty">No expenses yet.</div>';
+    $('bizBox').classList.toggle('hidden', biz !== 'ALL');
+    $('bizBreakdown').innerHTML = Object.entries(bizTot).map(([k, v]) => `<div class="cat-row"><span>${esc(BIZ[k])}</span><span>${money(v)}</span></div>`).join('')
+      + `<div class="cat-row"><strong>Zero Chaos LLC total</strong><strong>${money(bizTot.ZC + bizTot.ZCC + bizTot.ZCL)}</strong></div>`;
+    document.querySelectorAll('.biz-tab').forEach(t => t.setAttribute('aria-selected', t.dataset.biz === biz));
   }
   function fmtDate(d) { if (!d) return '—'; const [y, m, day] = d.split('-'); return `${m}/${day}/${y}`; }
   function render() {
-    const rows = cat === 'ALL' ? expenses : expenses.filter(r => r.category === cat);
+    const rows = cat === 'ALL' ? inBiz() : inBiz().filter(r => r.category === cat);
     $('tbody').innerHTML = rows.length ? rows.map(r => `<tr>
-      <td>${fmtDate(r.date)}</td><td>${esc(r.vendor)}</td><td class="amt">${money(r.amount)}</td><td>${esc(r.category)}</td><td>${esc(r.deductibility)}</td>
+      <td>${fmtDate(r.date)}</td><td><span class="biz-pill">${esc(r.business)}</span></td><td>${esc(r.vendor)}</td><td class="amt">${money(r.amount)}</td><td>${esc(r.category)}</td><td>${esc(r.deductibility)}</td>
       <td>${r.receipt_url ? `<button class="link" data-receipt="${esc(r.id)}">View</button>` : '—'}</td>
       <td class="purpose">${esc(r.business_purpose)}</td>
       <td><div class="row-actions"><button class="button ghost" data-edit="${esc(r.id)}">Edit</button><button class="button ghost" data-del="${esc(r.id)}">Delete</button></div></td></tr>`).join('')
-      : '<tr><td colspan="8" class="empty">No expenses in this view.</td></tr>';
+      : '<tr><td colspan="9" class="empty">No expenses in this view.</td></tr>';
   }
   $('filters').addEventListener('click', e => { const b = e.target.closest('.filter-btn'); if (!b) return;
     document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active')); b.classList.add('active'); cat = b.dataset.cat; render(); });
+  $('bizTabs').addEventListener('click', e => { const b = e.target.closest('.biz-tab'); if (!b) return;
+    document.querySelectorAll('.biz-tab').forEach(x => x.classList.remove('active')); b.classList.add('active'); biz = b.dataset.biz; stats(); render(); });
 
   $('tbody').addEventListener('click', async e => {
     const rc = e.target.closest('[data-receipt]'), ed = e.target.closest('[data-edit]'), dl = e.target.closest('[data-del]');
@@ -274,7 +296,7 @@
     editId = id || null; const r = id ? expenses.find(x => String(x.id) === id) : null;
     $('expTitle').textContent = r ? 'Edit expense' : 'New expense'; $('saveBtn').textContent = r ? 'Save changes' : 'Save expense';
     $('fDate').value = r ? r.date : new Date().toISOString().split('T')[0]; $('fAmount').value = r ? r.amount : '';
-    $('fVendor').value = r ? r.vendor || '' : ''; $('fCategory').value = r ? r.category || '' : ''; $('fDeduct').value = r ? r.deductibility || '' : '';
+    $('fBusiness').value = r ? r.business || '' : (biz === 'ALL' ? '' : biz); $('fVendor').value = r ? r.vendor || '' : ''; $('fCategory').value = r ? r.category || '' : ''; $('fDeduct').value = r ? r.deductibility || '' : '';
     $('fPurpose').value = r ? r.business_purpose || '' : ''; $('fNotes').value = r ? r.notes || '' : ''; $('fReceipt').value = '';
     $('receiptHint').textContent = r && r.receipt_url ? 'A receipt is on file. Choosing a new file replaces it.' : '';
     $('formError').textContent = ''; $('expModal').classList.add('active');
@@ -285,9 +307,9 @@
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModals(); });
 
   $('saveBtn').addEventListener('click', async () => {
-    const f = { date: $('fDate').value, amount: parseFloat($('fAmount').value), vendor: $('fVendor').value.trim(), category: $('fCategory').value,
+    const f = { business: $('fBusiness').value, date: $('fDate').value, amount: parseFloat($('fAmount').value), vendor: $('fVendor').value.trim(), category: $('fCategory').value,
       deductibility: $('fDeduct').value, business_purpose: $('fPurpose').value.trim(), notes: $('fNotes').value.trim() || null };
-    const missing = [!f.date && 'date', !(f.amount > 0) && 'amount', !f.vendor && 'vendor', !f.category && 'category', !f.deductibility && 'deductibility', !f.business_purpose && 'business purpose'].filter(Boolean);
+    const missing = [!f.business && 'business', !f.date && 'date', !(f.amount > 0) && 'amount', !f.vendor && 'vendor', !f.category && 'category', !f.deductibility && 'deductibility', !f.business_purpose && 'business purpose'].filter(Boolean);
     if (missing.length) { $('formError').textContent = 'Fill in: ' + missing.join(', ') + '.'; return; }
     const btn = $('saveBtn'); btn.disabled = true; btn.textContent = 'Saving...';
     const file = $('fReceipt').files[0];
@@ -314,10 +336,10 @@
 
   $('exportBtn').addEventListener('click', () => {
     if (!expenses.length) { toast('No expenses to export', true); return; }
-    const head = ['Date','Vendor','Amount','Category','Deductibility','Business Purpose','Notes','Receipt on file'];
-    const rows = expenses.map(r => [r.date, r.vendor, r.amount, r.category, r.deductibility, r.business_purpose, r.notes, r.receipt_url ? 'Yes' : 'No'].map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','));
+    const head = ['Date','Business','Vendor','Amount','Category','Deductibility','Business Purpose','Notes','Receipt on file'];
+    const rows = expenses.map(r => [r.date, r.business, r.vendor, r.amount, r.category, r.deductibility, r.business_purpose, r.notes, r.receipt_url ? 'Yes' : 'No'].map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','));
     const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([[head.join(','), ...rows].join('\n')], { type: 'text/csv' }));
-    a.download = 'zcc-expenses-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); toast('CSV exported');
+    a.download = 'zero-chaos-expenses-' + new Date().toISOString().split('T')[0] + '.csv'; a.click(); toast('CSV exported');
   });
 
   $('sheetsBtn').addEventListener('click', async () => {
